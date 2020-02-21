@@ -1,38 +1,27 @@
 package com.blitz.compiler.parsers.lr0;
 
-import com.blitz.compiler.utils.Production;
+import com.blitz.compiler.utils.Rule;
 
 import java.util.Arrays;
 import java.util.Objects;
 
-/**
- * LR(0)特点是规约是不使用向前看
- */
-public class LR0Item extends Production {
+public class LR0Item extends Rule {
+
     protected int dotPointer;
 
-    public LR0Item(Production p){
-        super(p.getLeftSide(),p.getRightSide());
+    public LR0Item(Rule r) {
+        super(r.getLeftSide(), r.getRightSide());
         this.dotPointer = 0;
     }
 
-    public LR0Item(String leftSide,String[] rightSide,int dotPointer) {
-        super(leftSide,rightSide);
+    public LR0Item(String leftSide, String[] rightSide, int dotPointer) {
+        super(leftSide, rightSide);
         this.dotPointer = dotPointer;
     }
 
-    LR0Item(LR0Item item){
+    public LR0Item(LR0Item item) {
         super(item);
         dotPointer = item.getDotPointer();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        LR0Item lr0Item = (LR0Item) o;
-        return dotPointer == lr0Item.dotPointer;
     }
 
     @Override
@@ -45,41 +34,65 @@ public class LR0Item extends Production {
     }
 
     @Override
-    public String toString() {
-        var buffer = new StringBuilder(leftSide + "->");
-        for (int i = 0; i < rightSide.length; i++) {
-            if(i == dotPointer) {
-                buffer.append(".");
-            }
-            buffer.append(rightSide[i]);
-            if( i != rightSide.length -1){
-                buffer.append(" ");
-            }
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-
-        if(rightSide.length == dotPointer) {
-            buffer.append(".");
+        if (obj == null) {
+            return false;
         }
-
-        return buffer.toString();
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final LR0Item other = (LR0Item) obj;
+        if (this.dotPointer != other.dotPointer) {
+            return false;
+        }
+        if (!this.leftSide.equals(other.leftSide)) {
+            return false;
+        }
+        if (!Arrays.equals(this.rightSide, other.rightSide)) {
+            return false;
+        }
+        return true;
     }
+
+    @Override
+    public String toString() {
+        String str = leftSide + " -> ";
+        for (int i = 0; i < rightSide.length; i++) {
+            if (i == dotPointer) {
+                str += ".";
+            }
+            str += rightSide[i];
+            if (i != rightSide.length - 1) {
+                str += " ";
+            }
+        }
+        if (rightSide.length == dotPointer) {
+            str += ".";
+        }
+        return str;
+    }
+
 
     public int getDotPointer() {
         return dotPointer;
     }
 
     boolean goTo() {
-        if(dotPointer >= rightSide.length) {
-            return  false;
+        if (dotPointer >= rightSide.length) {
+            return false;
         }
         dotPointer++;
         return true;
     }
 
-    String getCurrentTerminal(){
-        if(dotPointer == rightSide.length) {
+    String getCurrentTerminal() {
+        if (dotPointer == rightSide.length) {
             return null;
         }
         return rightSide[dotPointer];
     }
+
 }

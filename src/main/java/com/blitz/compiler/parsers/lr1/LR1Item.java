@@ -1,34 +1,34 @@
 package com.blitz.compiler.parsers.lr1;
 
-import com.blitz.compiler.utils.Production;
+import com.blitz.compiler.parsers.lr0.LR0Item;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
 
-public class LR1Item  {
-    private HashSet<String> lookAhead;
+public class LR1Item {
+
+    private HashSet<String> lookahead;
     private String leftSide;
-    private String[] righSide;
+    private String[] rightSide;
     private int dotPointer;
 
-
-    public LR1Item(String leftSide,String[] righSide,int dotPointer,HashSet<String > lookAhead){
+    public LR1Item(String leftSide, String[] rightSide, int dotPointer, HashSet<String> lookahead) {
         this.leftSide = leftSide;
-        this.righSide = righSide;
+        this.rightSide = rightSide;
         this.dotPointer = dotPointer;
-        this.lookAhead = lookAhead;
+        this.lookahead = lookahead;
     }
 
     public String getCurrent() {
-        if(dotPointer == righSide.length) {
+        if (dotPointer == rightSide.length) {
             return null;
         }
-        return righSide[dotPointer];
+        return rightSide[dotPointer];
     }
 
     boolean goTo() {
-        if(dotPointer >= righSide.length) {
+        if (dotPointer >= rightSide.length) {
             return false;
         }
         dotPointer++;
@@ -39,24 +39,24 @@ public class LR1Item  {
         return dotPointer;
     }
 
-    public String[] getRighSide() {
-        return righSide;
+    public String[] getRightSide() {
+        return rightSide;
     }
 
-    public HashSet<String> getLookAhead() {
-        return lookAhead;
+    public HashSet<String> getLookahead() {
+        return lookahead;
     }
 
     public String getLeftSide() {
         return leftSide;
     }
 
-    public void setLeftSide(String leftSide) {
-        this.leftSide = leftSide;
+    public void setLookahead(HashSet<String> lookahead) {
+        this.lookahead = lookahead;
     }
 
-    public void setRighSide(String[] righSide) {
-        this.righSide = righSide;
+    public void setRightSide(String[] rightSide) {
+        this.rightSide = rightSide;
     }
 
     @Override
@@ -65,9 +65,13 @@ public class LR1Item  {
         if (o == null || getClass() != o.getClass()) return false;
         LR1Item lr1Item = (LR1Item) o;
         return dotPointer == lr1Item.dotPointer &&
-                Objects.equals(lookAhead, lr1Item.lookAhead) &&
+                Objects.equals(lookahead, lr1Item.lookahead) &&
                 Objects.equals(leftSide, lr1Item.leftSide) &&
-                Arrays.equals(righSide, lr1Item.righSide);
+                Arrays.equals(rightSide, lr1Item.rightSide);
+    }
+
+    public boolean equalLR0(LR1Item item) {
+        return leftSide.equals(item.getLeftSide()) && Arrays.equals(rightSide, item.getRightSide()) && dotPointer == item.getDotPointer();
     }
 
     @Override
@@ -75,32 +79,27 @@ public class LR1Item  {
         int hash = 7;
         hash = 31 * hash + this.dotPointer;
         hash = 31 * hash + Objects.hashCode(this.leftSide);
-        hash = 31 * hash + Arrays.deepHashCode(this.righSide);
-        hash = 31 * hash + Objects.hashCode(this.lookAhead);
-
+        hash = 31 * hash + Arrays.deepHashCode(this.rightSide);
+        hash = 31 * hash + Objects.hashCode(this.lookahead);
         return hash;
-    }
-
-    public  boolean equalLR0(LR1Item item){
-        return leftSide.equals(item.getLeftSide()) && Arrays.equals(righSide,item.getRighSide()) && dotPointer == item.getDotPointer();
     }
 
     @Override
     public String toString() {
         String str = leftSide + " -> ";
-        for (int i = 0; i < righSide.length ; i++) {
-            if(i == dotPointer) {
+        for (int i = 0; i < rightSide.length; i++) {
+            if (i == dotPointer) {
                 str += ".";
             }
-            str += righSide[i];
-            if(i != righSide.length - 1) {
+            str += rightSide[i];
+            if (i != rightSide.length - 1) {
                 str += " ";
             }
         }
-        if(righSide.length == dotPointer) {
+        if (rightSide.length == dotPointer) {
             str += ".";
         }
-        str += " , " + lookAhead;
+        str += " , " + lookahead;
         return str;
     }
 }

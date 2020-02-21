@@ -2,9 +2,15 @@ package com.blitz.compiler.parsers.lr0;
 
 import com.blitz.compiler.utils.*;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Stack;
 
 public class LR0Parser extends LRParser {
 
@@ -14,19 +20,16 @@ public class LR0Parser extends LRParser {
         super(grammar);
     }
 
-    protected void commonInit() {
+    public boolean parserSLR1() {
         createStates();
         createGoToTable();
+        return createActionTableForSLR1();
     }
 
     public boolean parserLR0() {
-        commonInit();
+        createStates();
+        createGoToTable();
         return createActionTableForLR0();
-    }
-
-    public boolean parserSLR1() {
-        commonInit();
-        return createActionTableForSLR1();
     }
 
     protected void createStates() {
@@ -39,15 +42,15 @@ public class LR0Parser extends LRParser {
 
         for (int i = 0; i < canonicalCollection.size(); i++) {
             HashSet<String> stringWithDot = new HashSet<>();
-            for (LR0Item item : canonicalCollection.get(i).getItems()
-            ) {
+            for (LR0Item item : canonicalCollection.get(i).getItems()) {
                 if (item.getCurrentTerminal() != null) {
                     stringWithDot.add(item.getCurrentTerminal());
                 }
             }
-            for (var str : stringWithDot) {
+            for (String str : stringWithDot) {
                 HashSet<LR0Item> nextStateItems = new HashSet<>();
-                for (var item : canonicalCollection.get(i).getItems()) {
+                for (LR0Item item : canonicalCollection.get(i).getItems()) {
+
                     if (item.getCurrentTerminal() != null && item.getCurrentTerminal().equals(str)) {
                         LR0Item temp = new LR0Item(item);
                         temp.goTo();
@@ -57,7 +60,7 @@ public class LR0Parser extends LRParser {
                 LR0State nextState = new LR0State(grammar, nextStateItems);
                 boolean isExist = false;
                 for (int j = 0; j < canonicalCollection.size(); j++) {
-                    if (canonicalCollection.get(i).getItems().containsAll(nextState.getItems())
+                    if (canonicalCollection.get(j).getItems().containsAll(nextState.getItems())
                             && nextState.getItems().containsAll(canonicalCollection.get(j).getItems())) {
                         isExist = true;
                         canonicalCollection.get(i).addTransition(str, canonicalCollection.get(j));
@@ -69,47 +72,48 @@ public class LR0Parser extends LRParser {
                 }
             }
         }
+
     }
 
-    @Override
     protected void createGoToTable() {
         goToTable = new HashMap[canonicalCollection.size()];
         for (int i = 0; i < goToTable.length; i++) {
             goToTable[i] = new HashMap<>();
         }
         for (int i = 0; i < canonicalCollection.size(); i++) {
-            for(var s : canonicalCollection.get(i).getTransitions().keySet()){
-                if(grammar.getVariables().contains(s)) {
-                    goToTable[i].put(s,findStateIndex(canonicalCollection.get(i).getTransitions().get(s)));
+            for (String s : canonicalCollection.get(i).getTransition().keySet()) {
+                if (grammar.getVariables().contains(s)) {
+                    goToTable[i].put(s, findStateIndex(canonicalCollection.get(i).getTransition().get(s)));
                 }
             }
         }
-
     }
-    private boolean createActionTableForLR0() {
+
+    private boolean createActionTableForSLR1() {
         actionTable = new HashMap[canonicalCollection.size()];
         for (int i = 0; i < goToTable.length; i++) {
             actionTable[i] = new HashMap<>();
         }
         for (int i = 0; i < canonicalCollection.size(); i++) {
-            for (var s : canonicalCollection.get(i).getTransitions().keySet()) {
-                actionTable[i].put(s, new Action(ActionType.SHIFT, findStateIndex(canonicalCollection.get(i).getTransitions().get(s))));
+            for (String s : canonicalCollection.get(i).getTransition().keySet()) {
+                if (grammar.getTerminals().contains(s)) {
+                    actionTable[i].put(s, new Action(ActionType.SHIFT, findStateIndex(canonicalCollection.get(i).getTransition().get(s))));
+                }
             }
         }
         for (int i = 0; i < canonicalCollection.size(); i++) {
-            for (var item : canonicalCollection.get(i).getItems()) {
+            for (LR0Item item : canonicalCollection.get(i).getItems()) {
                 if (item.getDotPointer() == item.getRightSide().length) {
-                    if (item.getLeftSide().equals(Constants.START.getValue())) {
-                        actionTable[i].put(Constants.EOI.getValue(), new Action(ActionType.ACCEPT, 0));
+                    if (item.getLeftSide().equals("S'")) {
+                        actionTable[i].put("$", new Action(ActionType.ACCEPT, 0));
                     } else {
-                        HashSet<String> terminals = grammar.getTerminals();
-                        terminals.add(Constants.EOI.getValue());
-                        Production rule = new Production(item.getLeftSide(), item.getRightSide().clone());
+                        HashSet<String> follow = grammar.getFallowSets().get(item.getLeftSide());
+                        Rule rule = new Rule(item.getLeftSide(), item.getRightSide().clone());
                         int index = grammar.findRuleIndex(rule);
                         Action action = new Action(ActionType.REDUCE, index);
-                        for (var str : terminals) {
+                        for (String str : follow) {
                             if (actionTable[i].get(str) != null) {
-                                System.out.println("it has a REDUCE-" + actionTable[i].get(str).getType() + "conflict in state" + i);
+                                System.out.println("it has a REDUCE-" + actionTable[i].get(str).getType() + " confilct in state " + i);
                                 return false;
                             } else {
                                 actionTable[i].put(str, action);
@@ -122,32 +126,32 @@ public class LR0Parser extends LRParser {
         return true;
     }
 
-    private boolean createActionTableForSLR1() {
+    private boolean createActionTableForLR0() {
         actionTable = new HashMap[canonicalCollection.size()];
         for (int i = 0; i < goToTable.length; i++) {
             actionTable[i] = new HashMap<>();
         }
-
         for (int i = 0; i < canonicalCollection.size(); i++) {
-            for (var s : canonicalCollection.get(i).getTransitions().keySet()) {
+            for (String s : canonicalCollection.get(i).getTransition().keySet()) {
                 if (grammar.getTerminals().contains(s)) {
-                    actionTable[i].put(s, new Action(ActionType.SHIFT, findStateIndex(canonicalCollection.get(i).getTransitions().get(s))));
+                    actionTable[i].put(s, new Action(ActionType.SHIFT, findStateIndex(canonicalCollection.get(i).getTransition().get(s))));
                 }
             }
         }
         for (int i = 0; i < canonicalCollection.size(); i++) {
-            for (var item : canonicalCollection.get(i).getItems()) {
+            for (LR0Item item : canonicalCollection.get(i).getItems()) {
                 if (item.getDotPointer() == item.getRightSide().length) {
-                    if (item.getLeftSide().equals(Constants.START.getValue())) {
-                        actionTable[i].put(Constants.EOI.getValue(), new Action(ActionType.ACCEPT, 0));
+                    if (item.getLeftSide().equals("s'")) {
+                        actionTable[i].put("$", new Action(ActionType.ACCEPT, 0));
                     } else {
-                        HashSet<String> follow = grammar.getFollowSets().get(item.getLeftSide());
-                        Production rule = new Production(item.getLeftSide(), item.getRightSide().clone());
+                        HashSet<String> terminals = grammar.getTerminals();
+                        terminals.add("$");
+                        Rule rule = new Rule(item.getLeftSide(), item.getRightSide().clone());
                         int index = grammar.findRuleIndex(rule);
                         Action action = new Action(ActionType.REDUCE, index);
-                        for (var str : follow) {
+                        for (String str : terminals) {
                             if (actionTable[i].get(str) != null) {
-                                System.out.println("it has a REDUCE-" + actionTable[i].get(str).getType() + " conflict in state " + i);
+                                System.out.println("it has a REDUCE-" + actionTable[i].get(str).getType() + " confilct in state " + i);
                                 return false;
                             } else {
                                 actionTable[i].put(str, action);
@@ -172,9 +176,10 @@ public class LR0Parser extends LRParser {
     public String canonicalCollectionStr() {
         String str = "Canonical Collection : \n";
         for (int i = 0; i < canonicalCollection.size(); i++) {
-            str += "State " + i + "\n";
+            str += "State " + i + " : \n";
             str += canonicalCollection.get(i) + "\n";
         }
         return str;
     }
+
 }
