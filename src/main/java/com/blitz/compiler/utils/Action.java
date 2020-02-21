@@ -2,23 +2,24 @@ package com.blitz.compiler.utils;
 
 public class Action {
     private ActionType type;
-    private Integer operand;
+    private int operand;
 
-    public Action(ActionType type,Integer operand) {
+    public Action(ActionType type, int operand) {
         this.type = type;
         this.operand = operand;
     }
 
     @Override
     public String toString() {
-        return type +  " " + (type == ActionType.ACCEPT ? "":operand);
-    }
-
-    public Integer getOperand() {
-        return operand;
+        return type + " " + (type == ActionType.ACCEPT ? "" : operand);
     }
 
     public ActionType getType() {
         return type;
     }
+
+    public int getOperand() {
+        return operand;
+    }
+
 }
