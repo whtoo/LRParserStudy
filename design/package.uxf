@@ -1,0 +1,30 @@
+<diagram program="umletino" version="14.4.0-SNAPSHOT"><zoom_level>10</zoom_level><element><id>UMLPackage</id><coordinates><x>70</x><y>210</y><w>140</w><h>160</h></coordinates><panel_attributes>utils
+--
++ Action
++ ActionType
++ Constants
++ Grammar
++ LPRarser
++ Rule
+bg=black
+fg=white
+group=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>220</x><y>210</y><w>330</w><h>160</h></coordinates><panel_attributes>parsers
+--
+
+bg=black
+fg=white
+group=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>50</x><y>100</y><w>560</w><h>470</h></coordinates><panel_attributes>compiler
+--
+bg=gray
+fg=blue
+group=1</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>230</x><y>240</y><w>140</w><h>70</h></coordinates><panel_attributes>lr0
+--
+-Content 1
++Content 2
+bg=white
+fg=black</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>390</x><y>240</y><w>140</w><h>70</h></coordinates><panel_attributes>lr1
+--
+-Content 1
++Content 2
+bg=white
+fg=black</panel_attributes><additional_attributes></additional_attributes></element></diagram>
