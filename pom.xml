@@ -45,7 +45,7 @@
         </plugins>
     </build>
     <packaging>jar</packaging>
-
+    
     <name>LRParserStudy</name>
     <url>http://github.com/whtoo/LRParserDemo</url>
     <description>

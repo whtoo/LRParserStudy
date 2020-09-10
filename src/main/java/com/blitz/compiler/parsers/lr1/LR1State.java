@@ -6,7 +6,6 @@ import com.blitz.compiler.utils.Rule;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 
 public class LR1State {
     private LinkedHashSet<LR1Item> items;

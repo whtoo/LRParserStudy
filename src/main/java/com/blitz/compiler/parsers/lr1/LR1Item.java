@@ -1,7 +1,5 @@
 package com.blitz.compiler.parsers.lr1;
 
-import com.blitz.compiler.parsers.lr0.LR0Item;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
