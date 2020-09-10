@@ -21,7 +21,12 @@ public class Grammar {
         terminals = new HashSet<>();
         variables = new HashSet<>();
         int line = 0;
+        // lex iput literal grammar file.
         for (String st : s.split("\n")) {
+            // Every line should be constructed by three parts.
+            // The first is production name.
+            // The second will be "->".
+            // At the end, a seriers of symbols which contains other prodution's name and "|" means logical or.
             String[] sides = st.split("->");
             String leftSide = sides[0].trim();
             variables.add(leftSide);
@@ -40,6 +45,7 @@ public class Grammar {
                 line++;
             }
         }
+        // Every rule's left size means a production name, etc. it's a variable but terminal.
         for (String variable : variables) {
             terminals.remove(variable);
         }
@@ -48,7 +54,7 @@ public class Grammar {
             System.out.println(i + " : " + rules.get(i));
         }
 
-
+        // When every rule loaded, we should compute `FirstSet` and  `FollowSet`
         computeFirstSets();
         computeFollowSet();
     }
